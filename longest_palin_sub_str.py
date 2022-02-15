@@ -2,7 +2,9 @@ from typing import List, Tuple
 
 
 class Solution:
-    non_palindromic_strs = set()
+    non_palindromic_strs: set = set()
+    test: str = ""
+    children: set = set()
 
     def is_palindrome(self, s: str, len_s: int) -> bool:
         # print("Checking if palindrome")
@@ -19,7 +21,7 @@ class Solution:
         return True
 
     def get_longest_child_palindrome(
-        self, s: str, ptrs: List[Tuple[int, int]]
+        self, ptrs: List[Tuple[int, int]]
     ):
         children_ptrs = []
 
@@ -27,9 +29,22 @@ class Solution:
         # print(ptrs)
 
         for left_ptr, right_ptr in ptrs:
-            children_ptrs.extend([(left_ptr + 1, right_ptr), (left_ptr, right_ptr - 1)])
+            left_case = (left_ptr + 1, right_ptr)
+            right_case = (left_ptr, right_ptr - 1)
 
-            str_to_check = s[left_ptr : right_ptr + 1]
+            # print(left_case)
+            # print(right_case)
+            # print(self.children)
+            
+            if left_case not in self.children:
+                children_ptrs.append(left_case)
+                self.children.add(left_case)
+            
+            if right_case not in self.children:
+                children_ptrs.append(right_case)
+                self.children.add(right_case)
+
+            str_to_check = self.test[left_ptr : right_ptr + 1]
             if str_to_check in self.non_palindromic_strs:
                 continue
 
@@ -38,16 +53,20 @@ class Solution:
             else:
                 self.non_palindromic_strs.add(str_to_check)
 
-        return self.get_longest_child_palindrome(s, children_ptrs)
+        return self.get_longest_child_palindrome(children_ptrs)
 
     def longestPalindrome(self, s: str) -> str:
+        self.children = set()
+        self.non_palindromic_strs = set()
+        self.test = ""
         # print(s)
         len_s = len(s)
         # Condition where the input string is itself a palindrome
         if self.is_palindrome(s, len_s):
             return s
+        self.test = s
         longest_palindromic_str = self.get_longest_child_palindrome(
-            s, [(0, len_s - 2), (1, len_s - 1)]
+            [(0, len_s - 2), (1, len_s - 1)]
         )
         return longest_palindromic_str
 
@@ -63,4 +82,6 @@ assert s.longestPalindrome("bb") == "bb"
 assert s.longestPalindrome("cbbd") == "bb"
 assert s.longestPalindrome("c") == "c"
 
-s.longestPalindrome("babaddtattarrattatddetartrateedredividerb")
+assert s.longestPalindrome("babaddtattarrattatddetartrateedredividerb") == "ddtattarrattatdd"
+
+s.longestPalindrome("cyyoacmjwjubfkzrrbvquqkwhsxvmytmjvbborrtoiyotobzjmohpadfrvmxuagbdczsjuekjrmcwyaovpiogspbslcppxojgbfxhtsxmecgqjfuvahzpgprscjwwutwoiksegfreortttdotgxbfkisyakejihfjnrdngkwjxeituomuhmeiesctywhryqtjimwjadhhymydlsmcpycfdzrjhstxddvoqprrjufvihjcsoseltpyuaywgiocfodtylluuikkqkbrdxgjhrqiselmwnpdzdmpsvbfimnoulayqgdiavdgeiilayrafxlgxxtoqskmtixhbyjikfmsmxwribfzeffccczwdwukubopsoxliagenzwkbiveiajfirzvngverrbcwqmryvckvhpiioccmaqoxgmbwenyeyhzhliusupmrgmrcvwmdnniipvztmtklihobbekkgeopgwipihadswbqhzyxqsdgekazdtnamwzbitwfwezhhqznipalmomanbyezapgpxtjhudlcsfqondoiojkqadacnhcgwkhaxmttfebqelkjfigglxjfqegxpcawhpihrxydprdgavxjygfhgpcylpvsfcizkfbqzdnmxdgsjcekvrhesykldgptbeasktkasyuevtxrcrxmiylrlclocldmiwhuizhuaiophykxskufgjbmcmzpogpmyerzovzhqusxzrjcwgsdpcienkizutedcwrmowwolekockvyukyvmeidhjvbkoortjbemevrsquwnjoaikhbkycvvcscyamffbjyvkqkyeavtlkxyrrnsmqohyyqxzgtjdavgwpsgpjhqzttukynonbnnkuqfxgaatpilrrxhcqhfyyextrvqzktcrtrsbimuokxqtsbfkrgoiznhiysfhzspkpvrhtewthpbafmzgchqpgfsuiddjkhnwchpleibavgmuivfiorpteflholmnxdwewj")
