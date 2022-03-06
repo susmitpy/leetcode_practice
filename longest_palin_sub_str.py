@@ -1,74 +1,60 @@
-from typing import List, Tuple
+from typing import List, Set, Tuple, NewType
+
+START_IDX = NewType("START_IDX", int)
+END_IDX = NewType("END_IDX", int)
 
 
 class Solution:
-    non_palindromic_strs: set = set()
-    test: str = ""
-    children: set = set()
+    input_str: str
+    non_palin_idxs: Set[Tuple[START_IDX, END_IDX]]
 
     def is_palindrome(self, s: str, len_s: int) -> bool:
-        # print("Checking if palindrome")
-        # print(s)
-        # print(len_s)
-        start_ptr = 0
-        end_ptr = len_s - 1
-        while start_ptr < end_ptr:
-            if s[start_ptr] != s[end_ptr]:
-                return False
-            start_ptr += 1
-            end_ptr -= 1
+        start_idx = 0
+        end_idx = len_s - 1
 
-        return True
+        while start_idx <= end_idx and s[start_idx] == s[end_idx]:
+            start_idx += 1
+            end_idx -= 1
 
-    def get_longest_child_palindrome(
-        self, ptrs: List[Tuple[int, int]]
-    ):
-        children_ptrs = []
+        return start_idx > end_idx
 
-        # print("Ptrs to check")
-        # print(ptrs)
+    def get_longest_palin_among_children(
+        self, children_ptrs: List[Tuple[START_IDX, END_IDX]]
+    ) -> str:
+        grand_children_ptrs: List[Tuple[START_IDX, END_IDX]] = []
 
-        for left_ptr, right_ptr in ptrs:
-            left_case = (left_ptr + 1, right_ptr)
-            right_case = (left_ptr, right_ptr - 1)
+        for start_idx, end_idx in children_ptrs:
+            if start_idx == end_idx:
+                return self.input_str[start_idx]
 
-            # print(left_case)
-            # print(right_case)
-            # print(self.children)
-            
-            if left_case not in self.children:
-                children_ptrs.append(left_case)
-                self.children.add(left_case)
-            
-            if right_case not in self.children:
-                children_ptrs.append(right_case)
-                self.children.add(right_case)
-
-            str_to_check = self.test[left_ptr : right_ptr + 1]
-            if str_to_check in self.non_palindromic_strs:
-                continue
-
-            if self.is_palindrome(str_to_check, (right_ptr - left_ptr) + 1):
+            str_to_check = self.input_str[start_idx : end_idx + 1]
+            is_already_checked_non_palin = (start_idx, end_idx) in self.non_palin_idxs
+            if not is_already_checked_non_palin and self.is_palindrome(
+                str_to_check, (end_idx - start_idx) + 1
+            ):
+                # It is the longest palindrome
                 return str_to_check
-            else:
-                self.non_palindromic_strs.add(str_to_check)
+            # It is not a palindrome
+            if not is_already_checked_non_palin:
+                self.non_palin_idxs.add((start_idx, end_idx))
+                # Add it's children
+                grand_children_ptrs.append((start_idx + 1, end_idx))  # type: ignore
+                grand_children_ptrs.append((start_idx, end_idx - 1))  # type: ignore
 
-        return self.get_longest_child_palindrome(children_ptrs)
+        return self.get_longest_palin_among_children(children_ptrs=grand_children_ptrs)
 
     def longestPalindrome(self, s: str) -> str:
-        self.children = set()
-        self.non_palindromic_strs = set()
-        self.test = ""
-        # print(s)
+        self.input_str = s
+        self.non_palin_idxs = set()
         len_s = len(s)
-        # Condition where the input string is itself a palindrome
+        if len_s <= 1:
+            return s
+
         if self.is_palindrome(s, len_s):
             return s
-        self.test = s
-        longest_palindromic_str = self.get_longest_child_palindrome(
-            [(0, len_s - 2), (1, len_s - 1)]
-        )
-        return longest_palindromic_str
+
+        children = [(0, len_s - 2), (1, len_s - 1)]
+        return self.get_longest_palin_among_children(children_ptrs=children)
 
 
 s = Solution()
@@ -82,6 +68,11 @@ assert s.longestPalindrome("bb") == "bb"
 assert s.longestPalindrome("cbbd") == "bb"
 assert s.longestPalindrome("c") == "c"
 
-assert s.longestPalindrome("babaddtattarrattatddetartrateedredividerb") == "ddtattarrattatdd"
+assert (
+    s.longestPalindrome("babaddtattarrattatddetartrateedredividerb")
+    == "ddtattarrattatdd"
+)
 
-s.longestPalindrome("cyyoacmjwjubfkzrrbvquqkwhsxvmytmjvbborrtoiyotobzjmohpadfrvmxuagbdczsjuekjrmcwyaovpiogspbslcppxojgbfxhtsxmecgqjfuvahzpgprscjwwutwoiksegfreortttdotgxbfkisyakejihfjnrdngkwjxeituomuhmeiesctywhryqtjimwjadhhymydlsmcpycfdzrjhstxddvoqprrjufvihjcsoseltpyuaywgiocfodtylluuikkqkbrdxgjhrqiselmwnpdzdmpsvbfimnoulayqgdiavdgeiilayrafxlgxxtoqskmtixhbyjikfmsmxwribfzeffccczwdwukubopsoxliagenzwkbiveiajfirzvngverrbcwqmryvckvhpiioccmaqoxgmbwenyeyhzhliusupmrgmrcvwmdnniipvztmtklihobbekkgeopgwipihadswbqhzyxqsdgekazdtnamwzbitwfwezhhqznipalmomanbyezapgpxtjhudlcsfqondoiojkqadacnhcgwkhaxmttfebqelkjfigglxjfqegxpcawhpihrxydprdgavxjygfhgpcylpvsfcizkfbqzdnmxdgsjcekvrhesykldgptbeasktkasyuevtxrcrxmiylrlclocldmiwhuizhuaiophykxskufgjbmcmzpogpmyerzovzhqusxzrjcwgsdpcienkizutedcwrmowwolekockvyukyvmeidhjvbkoortjbemevrsquwnjoaikhbkycvvcscyamffbjyvkqkyeavtlkxyrrnsmqohyyqxzgtjdavgwpsgpjhqzttukynonbnnkuqfxgaatpilrrxhcqhfyyextrvqzktcrtrsbimuokxqtsbfkrgoiznhiysfhzspkpvrhtewthpbafmzgchqpgfsuiddjkhnwchpleibavgmuivfiorpteflholmnxdwewj")
+s.longestPalindrome(
+    "cyyoacmjwjubfkzrrbvquqkwhsxvmytmjvbborrtoiyotobzjmohpadfrvmxuagbdczsjuekjrmcwyaovpiogspbslcppxojgbfxhtsxmecgqjfuvahzpgprscjwwutwoiksegfreortttdotgxbfkisyakejihfjnrdngkwjxeituomuhmeiesctywhryqtjimwjadhhymydlsmcpycfdzrjhstxddvoqprrjufvihjcsoseltpyuaywgiocfodtylluuikkqkbrdxgjhrqiselmwnpdzdmpsvbfimnoulayqgdiavdgeiilayrafxlgxxtoqskmtixhbyjikfmsmxwribfzeffccczwdwukubopsoxliagenzwkbiveiajfirzvngverrbcwqmryvckvhpiioccmaqoxgmbwenyeyhzhliusupmrgmrcvwmdnniipvztmtklihobbekkgeopgwipihadswbqhzyxqsdgekazdtnamwzbitwfwezhhqznipalmomanbyezapgpxtjhudlcsfqondoiojkqadacnhcgwkhaxmttfebqelkjfigglxjfqegxpcawhpihrxydprdgavxjygfhgpcylpvsfcizkfbqzdnmxdgsjcekvrhesykldgptbeasktkasyuevtxrcrxmiylrlclocldmiwhuizhuaiophykxskufgjbmcmzpogpmyerzovzhqusxzrjcwgsdpcienkizutedcwrmowwolekockvyukyvmeidhjvbkoortjbemevrsquwnjoaikhbkycvvcscyamffbjyvkqkyeavtlkxyrrnsmqohyyqxzgtjdavgwpsgpjhqzttukynonbnnkuqfxgaatpilrrxhcqhfyyextrvqzktcrtrsbimuokxqtsbfkrgoiznhiysfhzspkpvrhtewthpbafmzgchqpgfsuiddjkhnwchpleibavgmuivfiorpteflholmnxdwewj"
+)

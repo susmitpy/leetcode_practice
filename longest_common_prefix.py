@@ -1,5 +1,6 @@
 from typing import List
 
+
 class Solution:
     def get_common_prefix(self, str1: str, str2: str):
         common_prefix_last_index = -1
@@ -8,11 +9,11 @@ class Solution:
                 common_prefix_last_index += 1
             else:
                 break
-        
+
         if common_prefix_last_index == -1:
             return ""
-        
-        return str1[:common_prefix_last_index+1]
+
+        return str1[: common_prefix_last_index + 1]
 
     def longestCommonPrefix(self, strs: List[str]) -> str:
         # Check if there is only one element in the input list
@@ -28,8 +29,10 @@ class Solution:
         len_strs = len(strs)
         longest_common_prefix = strs[0]
 
-        for i in range(1,len_strs):
-            longest_common_prefix = self.get_common_prefix(longest_common_prefix, strs[i])
+        for i in range(1, len_strs):
+            longest_common_prefix = self.get_common_prefix(
+                longest_common_prefix, strs[i]
+            )
             if longest_common_prefix == "":
                 return ""
 
@@ -42,5 +45,5 @@ assert s.get_common_prefix("susmit", "susm") == "susm"
 assert s.get_common_prefix("susmit", "susmits") == "susmit"
 assert s.get_common_prefix("dog", "racecar") == ""
 
-assert s.longestCommonPrefix(["flower","flow","flight"]) == "fl"
-assert s.longestCommonPrefix(["dog","racecar","car"]) == ""
+assert s.longestCommonPrefix(["flower", "flow", "flight"]) == "fl"
+assert s.longestCommonPrefix(["dog", "racecar", "car"]) == ""
