@@ -9,15 +9,15 @@ class Solution:
     def countDigitOne(self, n: int) -> int:
         lower_bound_num_digits = len(str(n)) - 1
         count = lower_bound_num_digits * (10 ** (lower_bound_num_digits - 1))
-        max_num_of_len_digits = (10 ** lower_bound_num_digits) - 1
+        max_num_of_lower_bound_num_digits = (10 ** lower_bound_num_digits) - 1
 
         self.to_skip = set()
-        for i in range(max_num_of_len_digits + 1, n + 1):
+        for i in range(max_num_of_lower_bound_num_digits + 1, n + 1):
             if i in self.to_skip:
                 continue
             str_i = str(i)
             permutations = self.get_permutations(
-                min_num=max_num_of_len_digits, max_num=n, unprocessed=str_i
+                min_num=max_num_of_lower_bound_num_digits, max_num=n, unprocessed=str_i
             )
             count_of_one = str_i.count("1")
             if count_of_one > 0:
